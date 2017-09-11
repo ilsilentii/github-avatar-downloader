@@ -42,17 +42,18 @@ function avatar(string) {
 }
 
 function downloadImageByURL(url, filePath, username) {
-  request.get(url)
+  var stream = request.get(url)
     .on('error', function(err) {
       throw err;
     })
     .on('response', function(response) {
+      extension = response.headers["content-type"].split("/")
       console.log('Downloading image...');
+      stream.pipe(fs.createWriteStream(filePath + "/" + username + "." + extension[1]));
     })
     .on('end', function(response) {
       console.log('Download complete.');
     })
-    .pipe(fs.createWriteStream(filePath + "/" + username));
 
 }
 
