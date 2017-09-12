@@ -1,20 +1,27 @@
 var request = require('request');
 var fs = require('fs');
+require('./secretkey.env')
 
-var GITHUB_USER = "ilsilentii";
-var GITHUB_TOKEN = "5f17dfdfd1638207a1cb94d48fd424ee1c3c76a3";
+var username = user
+var password = token
 
-var repoOwner = "jquery"
-var repoName = "jquery"
+var repoOwner = process.argv[2] //Takes in User input
+var repoName = process.argv[3]
 
-console.log('Welcome to the Github Avatar Downloader!');
-
+function checkargs(owner, name) { // Checks to see if there is a valid input. If there is, invoke the getRepoContributers function
+  if (owner === undefined || name === undefined) {
+    console.log("Please input a valid repo Owner and Name!") //if user input is undefined, this message displays
+  } else {
+    console.log('Welcome to the Github Avatar Downloader!');
+    getRepoContributors(repoOwner, repoName, avatar);
+  }
+}
 
 function getRepoContributors(repoOwner, repoName, cb) {
-  var requestURL = 'https://' + GITHUB_USER + ':' + GITHUB_TOKEN + '@api.github.com/repos/' + repoOwner + '/' + repoName + '/contributors';
+  var requestURL = 'https://' + username + ':' + password + '@api.github.com/repos/' + repoOwner + '/' + repoName + '/contributors';
   var string = '';
 
-  var options = {
+  var options = { //Gets the header and the link to download the files from the repo
     url: requestURL,
     headers: {
       "User-Agent": "ilsilentii"
@@ -23,25 +30,26 @@ function getRepoContributors(repoOwner, repoName, cb) {
 
 
   request.get(options)
-    .on('error', function(err) {
+    .on('error', function(err) { //this function gets invoked if there is an error
       throw err;
+
     })
-    .on('data', function(chunk) {
+    .on('data', function(chunk) { //the actual data from the repo
       string += chunk
     })
     .on('end', function() {
-      string = JSON.parse(string);
+      string = JSON.parse(string); //pareses the information into an object
       cb(string);
     })
 
 }
 
-function avatar(string) {
+function avatar(string) { //function that loops through the entire repo and grabs all the links to the avatars and names
   for (i in string)
     downloadImageByURL(string[i].avatar_url, 'avatars', string[i].login);
 }
 
-function downloadImageByURL(url, filePath, username) {
+function downloadImageByURL(url, filePath, username) { // This function downloaded the files to an avatars folder and names the files to the login plus extensions of the file types (eg. png or jpeg)
   var stream = request.get(url)
     .on('error', function(err) {
       throw err;
@@ -57,4 +65,4 @@ function downloadImageByURL(url, filePath, username) {
 
 }
 
-getRepoContributors(repoOwner, repoName, avatar);
+checkargs(repoOwner, repoName) // invokes the check arguments function
